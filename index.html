@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="food"></div>
+<input type="text" class="quantity"><div class="foodType"></div>
+<div class="addToMeal">Dodaj u obrok</div>
+<div class="meal"></div>
+<div class="calculate">Izracunaj</div>
+<div class="result"></div>
+</body>
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script>
+    var calculate = function (meal) {
+        var result = 0;
+
+        meal.forEach(function (item) {
+            result += item.quantity * item.food.quantity;
+        });
+
+        return result;
+    };
+    var printResult = function (meal) {
+        $('.result').html(calculate(meal));
+    };
+
+    var printMeal = function (meal) {
+        var mealHtml = '<ul>';
+        meal.forEach(function (item, index) {
+            mealHtml += '<li data-item="'+ index +'">' + item.food.name + ': ' + item.quantity + ' ' + item.food.quantity_type + '<span>X</span>';
+        });
+        mealHtml += '<ul>';
+        $('.meal').html(mealHtml);
+    };
+
+    var printFood = function (food) {
+        var foodHtml = '<select>';
+        food.forEach(function (item, index) {
+            foodHtml += '<option value="' + index + '">' + item.name + '</option>'
+        });
+        foodHtml += '</select>';
+        $('.food').html(foodHtml);
+    };
+    var printQuantityType = function (foodObj) {
+        $('.foodType').html(foodObj.quantity_type);
+    };
+
+    var getSelectedFood = function (food) {
+        return food[$('.food select').find(":selected").val()]
+    };
+
+    var getFoodItemQuantity = function () {
+        return $('.quantity').val();
+    };
+
+    var addToMeal = function (meal, foodObj) {
+        if(getFoodItemQuantity()){
+            var newFood = {
+                food: foodObj,
+                quantity: getFoodItemQuantity()
+            };
+            meal.push(newFood);
+            return meal;
+        }
+        return meal;
+    };
+    var clearFoodQuantity = function () {
+        $('.quantity').html('');
+    };
+    var removeFromMeal = function (meal, item) {
+        meal.pop(item);
+        return meal;
+    };
+    var refreshScreen = function (meal) {
+        printMeal(meal);
+        printResult(meal);
+    };
+    var generateFoodData = function () {
+        var food = [];
+        $("#hleb").find("tr").each(function(i,v) {
+            console.log('aaa');
+//            food.push({
+//                name: $(this).find('td').first().html(),
+//                quantity: 1,
+//                quantity_type: 'testing only'
+//            });
+        });
+//        console.log(food);
+        return [
+            {
+                name: 'hleb beli i polubeli',
+                quantity: 1,
+                quantity_type: '25 gr - 1 tanka kriška'
+            },
+            {
+                name: 'hleb crni, ražani',
+                quantity: 1,
+                quantity_type: '30 gr - 1 tanka kriška'
+            },
+            {
+                name: 'hleb kukuruzni',
+                quantity: 1,
+                quantity_type: '35 gr - 1 tanka kriška'
+            },
+            {
+                name: 'kravlje mleko (neobrano)',
+                quantity: 0.4,
+                quantity_type: '1dl'
+            },
+        ];
+    };
+
+    $(document).ready(function () {
+        var food = generateFoodData();
+        var meal = [];
+
+        printFood(food);
+
+        $('.food').delegate('select', 'change', function () {
+            printQuantityType(getSelectedFood(food))
+        });
+        $('.addToMeal').on('click', function () {
+            meal = addToMeal(meal, getSelectedFood(food));
+            refreshScreen(meal);
+            clearFoodQuantity();
+        });
+        $('.meal').delegate('li span', 'click', function () {
+            meal = removeFromMeal(meal, $(this).data('item'));
+            refreshScreen(meal);
+        });
+        $('.calculate').on('click', function (e) {
+            printResult(meal);
+        });
+
+    });
+</script>
+</html>
